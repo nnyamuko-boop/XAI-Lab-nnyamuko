@@ -4,15 +4,19 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
-
-# RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies required for building some Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# COPY docker/requirements/requirements-train.txt requirements.txt
+COPY docker/requirements/requirements-train.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy source code and configuration files
 COPY config.py train.py mlflow_logger.py ./
 
-# TODO: Uncomment the command below
-# CMD ["python", "mlflow_logger.py"]
+# Ensure data is also available if it's not mounted via volume
+COPY data/ ./data/ 
+
+# Execute the training script via the MLflow logger wrapper
+CMD ["python", "mlflow_logger.py"]

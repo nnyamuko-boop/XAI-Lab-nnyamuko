@@ -4,16 +4,22 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
-
-# RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies if required for the inference environment
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# COPY docker/requirements/requirements-inference.txt requirements.txt
+# Install specific dependencies for FastAPI and model serving
+COPY docker/requirements/requirements-inference.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy configuration, inference logic, and the trained model
 COPY config.py inference.py ./
+COPY model/ ./model/
 
+# Open the port for the FastAPI server
 EXPOSE 8000
+
+# Start the uvicorn server to listen for incoming credit risk requests
 # TODO: Uncomment
-# CMD ["uvicorn", "inference:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "inference:app", "--host", "0.0.0.0", "--port", "8000"]

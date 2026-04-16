@@ -5,13 +5,15 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
+# Install evaluation-specific dependencies
 COPY docker/requirements/requirements-eval.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy logic and artifacts
 COPY config.py evaluate.py ./
+# COPY model/ ./model/
+# COPY data/ ./data/
+
+# Generate visualizations and fairness reports
 # Uncomment
-# CMD ["python", "evaluate.py"]
+CMD ["python", "evaluate.py"]
